@@ -7,14 +7,18 @@ files:
   - filter:
       - dist/**/*
       - main.js
-      - preload.js
+      - web_app/dist/**/*
+      - main.py
       - iopaint/**/*
-      - '!iopaint/__pycache__'
+      - requirements.txt
+extraResources:
+  - to: Resources
+    filter:
+      - main.py
+      - iopaint/**/*
       - requirements.txt
 mac:
-  category: public.app-category.graphics-design
-win:
-  target: nsis
-linux:
-  target: AppImage
+  icon: build/icons/icon.png
+  target:
+    - dmg
 electronVersion: 36.4.0
