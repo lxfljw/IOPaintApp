@@ -1,0 +1,45 @@
+{
+  "name": "IOPaintApp",
+  "version": "1.0.0",
+  "description": "Desktop application for IOPaint",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "concurrently \"cd web_app && npm run dev\" \"python3 main.py start --model lama --port 8080\"",
+    "build": "cd web_app && npm run build",
+    "package": "electron-builder build --mac --win --linux",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^36.4.0",
+    "electron-builder": "^24.13.3",
+    "concurrently": "^8.2.2"
+  },
+  "build": {
+    "appId": "com.iopaint.app",
+    "productName": "IOPaint",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "main.js",
+      "preload.js",
+      "iopaint/**/*",
+      "!iopaint/__pycache__",
+      "requirements.txt"
+    ],
+    "mac": {
+      "category": "public.app-category.graphics-design"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "linux": {
+      "target": "AppImage"
+    }
+  }
+}
