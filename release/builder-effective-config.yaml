@@ -1,8 +1,8 @@
 directories:
   output: release
   buildResources: build
-appId: com.iopaint.app
-productName: IOPaint
+appId: com.watermagician.app
+productName: 水印魔术师
 files:
   - filter:
       - dist/**/*

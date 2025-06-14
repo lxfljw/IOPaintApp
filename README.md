@@ -1,5 +1,6 @@
-<h1 align="center">IOPaint</h1>
-<p align="center">A free and open-source inpainting & outpainting tool powered by SOTA AI model.</p>
+# 水印魔术师
+
+<p align="center">一款强大的 AI 水印去除工具，让水印消失得无影无踪。</p>
 
 <p align="center">
   <a href="https://github.com/Sanster/IOPaint">
@@ -19,13 +20,13 @@
   </a>
 </p>
 
-|Erase([LaMa](https://www.iopaint.com/models/erase/lama))|Replace Object([PowerPaint](https://www.iopaint.com/models/diffusion/powerpaint))|
-|-----|----|
-|<video src="https://github.com/Sanster/IOPaint/assets/3998421/264bc27c-0abd-4d8b-bb1e-0078ab264c4a">  | <video src="https://github.com/Sanster/IOPaint/assets/3998421/1de5c288-e0e1-4f32-926d-796df0655846">|
+| Erase([LaMa](https://www.iopaint.com/models/erase/lama))                                             | Replace Object([PowerPaint](https://www.iopaint.com/models/diffusion/powerpaint))                    |
+| ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| <video src="https://github.com/Sanster/IOPaint/assets/3998421/264bc27c-0abd-4d8b-bb1e-0078ab264c4a"> | <video src="https://github.com/Sanster/IOPaint/assets/3998421/1de5c288-e0e1-4f32-926d-796df0655846"> |
 
-|Draw Text([AnyText](https://www.iopaint.com/models/diffusion/anytext))|Out-painting([PowerPaint](https://www.iopaint.com/models/diffusion/powerpaint))|
-|---------|-----------|
-|<video src="https://github.com/Sanster/IOPaint/assets/3998421/ffd4eda4-f7d4-4693-93d8-d2cd5aa7c6d6">|<video src="https://github.com/Sanster/IOPaint/assets/3998421/c4af8aef-8c29-49e0-96eb-0aae2f768da2">|
+| Draw Text([AnyText](https://www.iopaint.com/models/diffusion/anytext))                               | Out-painting([PowerPaint](https://www.iopaint.com/models/diffusion/powerpaint))                      |
+| ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| <video src="https://github.com/Sanster/IOPaint/assets/3998421/ffd4eda4-f7d4-4693-93d8-d2cd5aa7c6d6"> | <video src="https://github.com/Sanster/IOPaint/assets/3998421/c4af8aef-8c29-49e0-96eb-0aae2f768da2"> |
 
 
 ## Features

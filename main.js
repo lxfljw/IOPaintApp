@@ -46,8 +46,8 @@ function startPythonServer() {
   checkPython.on("error", (err) => {
     log("Python check error:", err);
     dialog.showErrorBox(
-      "Python Not Found",
-      "Please make sure Python 3 is installed and available in PATH"
+      "Python 未找到",
+      "请确保已安装 Python 3 并添加到系统环境变量中"
     );
     app.quit();
     return;
@@ -60,11 +60,12 @@ function startPythonServer() {
   // 检查文件是否存在
   if (!fs.existsSync(pythonScript)) {
     log("Python script not found at:", pythonScript);
-    dialog.showErrorBox("Error", `Could not find main.py at ${pythonScript}`);
+    dialog.showErrorBox("错误", `找不到 main.py 文件: ${pythonScript}`);
     app.quit();
     return;
   }
 
+  // 使用本地 Python3 环境
   pythonProcess = spawn(
     "python3",
     [pythonScript, "start", "--model", "lama", "--port", "8080"],
@@ -73,9 +74,9 @@ function startPythonServer() {
       env: {
         ...process.env,
         PYTHONUNBUFFERED: "1",
-        PYTHONPATH: resourcePath, // 设置 PYTHONPATH 以便找到 iopaint 模块
+        PYTHONPATH: resourcePath,
       },
-      cwd: resourcePath, // 设置工作目录
+      cwd: resourcePath,
     }
   );
 
@@ -91,8 +92,8 @@ function startPythonServer() {
   pythonProcess.on("error", (err) => {
     log("Failed to start Python server:", err);
     dialog.showErrorBox(
-      "Python Error",
-      `Failed to start Python server: ${err.message}`
+      "Python 错误",
+      `启动 Python 服务器失败: ${err.message}`
     );
     app.quit();
   });
@@ -102,8 +103,8 @@ function startPythonServer() {
     if (code !== 0) {
       log(`Python server crashed with code ${code}`);
       dialog.showErrorBox(
-        "Python Error",
-        `Python server crashed with code ${code}`
+        "Python 错误",
+        `Python 服务器崩溃，错误代码: ${code}`
       );
       app.quit();
     }

@@ -1,7 +1,7 @@
 {
-  "name": "IOPaintApp",
+  "name": "water-magician",
   "version": "1.0.0",
-  "description": "Desktop application for IOPaint",
+  "description": "AI 水印去除工具 - 水印魔术师",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -19,8 +19,8 @@
     "concurrently": "^8.2.2"
   },
   "build": {
-    "appId": "com.iopaint.app",
-    "productName": "IOPaint",
+    "appId": "com.watermagician.app",
+    "productName": "水印魔术师",
     "directories": {
       "output": "release"
     },
