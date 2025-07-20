@@ -41,44 +41,77 @@ function startPythonServer() {
   const resourcePath = getResourcePath();
   log("Resource path:", resourcePath);
 
-  // 检查 Python 是否可用
-  const checkPython = spawn("python3", ["--version"]);
-  checkPython.on("error", (err) => {
-    log("Python check error:", err);
-    dialog.showErrorBox(
-      "Python 未找到",
-      "请确保已安装 Python 3 并添加到系统环境变量中"
-    );
-    app.quit();
-    return;
-  });
+  if (isDev) {
+    // 开发环境：使用系统 Python
+    log("Development mode: using system Python");
+    const checkPython = spawn("python3", ["--version"]);
+    checkPython.on("error", (err) => {
+      log("Python check error:", err);
+      dialog.showErrorBox(
+        "Python 未找到",
+        "请确保已安装 Python 3 并添加到系统环境变量中"
+      );
+      app.quit();
+      return;
+    });
 
-  // 确保使用正确的工作目录
-  const pythonScript = path.join(resourcePath, "main.py");
-  log("Python script path:", pythonScript);
+    const pythonScript = path.join(resourcePath, "main.py");
+    log("Python script path:", pythonScript);
 
-  // 检查文件是否存在
-  if (!fs.existsSync(pythonScript)) {
-    log("Python script not found at:", pythonScript);
-    dialog.showErrorBox("错误", `找不到 main.py 文件: ${pythonScript}`);
-    app.quit();
-    return;
-  }
-
-  // 使用本地 Python3 环境
-  pythonProcess = spawn(
-    "python3",
-    [pythonScript, "start", "--model", "lama", "--port", "8080"],
-    {
-      stdio: "pipe",
-      env: {
-        ...process.env,
-        PYTHONUNBUFFERED: "1",
-        PYTHONPATH: resourcePath,
-      },
-      cwd: resourcePath,
+    if (!fs.existsSync(pythonScript)) {
+      log("Python script not found at:", pythonScript);
+      dialog.showErrorBox("错误", `找不到 main.py 文件: ${pythonScript}`);
+      app.quit();
+      return;
     }
-  );
+
+    pythonProcess = spawn(
+      "python3",
+      [pythonScript, "start", "--model", "lama", "--port", "8080"],
+      {
+        stdio: "pipe",
+        env: {
+          ...process.env,
+          PYTHONUNBUFFERED: "1",
+          PYTHONPATH: resourcePath,
+        },
+        cwd: resourcePath,
+      }
+    );
+  } else {
+    // 生产环境：使用打包的 Python 可执行文件
+    log("Production mode: using bundled Python executable");
+    const pythonExecutable = path.join(
+      resourcePath,
+      "python",
+      "iopaint_server"
+    );
+    log("Python executable path:", pythonExecutable);
+
+    if (!fs.existsSync(pythonExecutable)) {
+      log("Python executable not found at:", pythonExecutable);
+      dialog.showErrorBox(
+        "错误",
+        `找不到 Python 可执行文件: ${pythonExecutable}`
+      );
+      app.quit();
+      return;
+    }
+
+    pythonProcess = spawn(
+      pythonExecutable,
+      ["start", "--model", "lama", "--port", "8080"],
+      {
+        stdio: "pipe",
+        env: {
+          ...process.env,
+          PYTHONUNBUFFERED: "1",
+          PYTHONPATH: resourcePath,
+        },
+        cwd: resourcePath,
+      }
+    );
+  }
 
   // 捕获 Python 进程的输出
   pythonProcess.stdout.on("data", (data) => {

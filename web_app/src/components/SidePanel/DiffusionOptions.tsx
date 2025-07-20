@@ -1,7 +1,7 @@
-import { FormEvent, useRef } from "react"
-import { useStore } from "@/lib/states"
-import { Switch } from "../ui/switch"
-import { NumberInput } from "../ui/input"
+import { FormEvent, useRef } from "react";
+import { useStore } from "@/lib/states";
+import { Switch } from "../ui/switch";
+import { NumberInput } from "../ui/input";
 import {
   Select,
   SelectContent,
@@ -9,31 +9,31 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../ui/select"
-import { Textarea } from "../ui/textarea"
-import { ExtenderDirection, PowerPaintTask } from "@/lib/types"
-import { Separator } from "../ui/separator"
-import { Button, ImageUploadButton } from "../ui/button"
-import { Slider } from "../ui/slider"
-import { useImage } from "@/hooks/useImage"
+} from "../ui/select";
+import { Textarea } from "../ui/textarea";
+import { ExtenderDirection, PowerPaintTask } from "@/lib/types";
+import { Separator } from "../ui/separator";
+import { Button, ImageUploadButton } from "../ui/button";
+import { Slider } from "../ui/slider";
+import { useImage } from "@/hooks/useImage";
 import {
   ANYTEXT,
   INSTRUCT_PIX2PIX,
   PAINT_BY_EXAMPLE,
   POWERPAINT,
-} from "@/lib/const"
-import { RowContainer, LabelTitle } from "./LabelTitle"
-import { Upload } from "lucide-react"
-import { useClickAway } from "react-use"
+} from "@/lib/const";
+import { RowContainer, LabelTitle } from "./LabelTitle";
+import { Upload } from "lucide-react";
+import { useClickAway } from "react-use";
 
 const ExtenderButton = ({
   text,
   onClick,
 }: {
-  text: string
-  onClick: () => void
+  text: string;
+  onClick: () => void;
 }) => {
-  const [showExtender] = useStore((state) => [state.settings.showExtender])
+  const [showExtender] = useStore((state) => [state.settings.showExtender]);
   return (
     <Button
       variant="outline"
@@ -43,8 +43,8 @@ const ExtenderButton = ({
     >
       <div className="flex items-center gap-1">{text}</div>
     </Button>
-  )
-}
+  );
+};
 
 const DiffusionOptions = () => {
   const [
@@ -79,51 +79,51 @@ const DiffusionOptions = () => {
     state.updateEnableBrushNet,
     state.updateEnableControlnet,
     state.updateLCMLora,
-  ])
-  const [exampleImage, isExampleImageLoaded] = useImage(paintByExampleFile)
-  const negativePromptRef = useRef(null)
+  ]);
+  const [exampleImage, isExampleImageLoaded] = useImage(paintByExampleFile);
+  const negativePromptRef = useRef(null);
   useClickAway<MouseEvent>(negativePromptRef, () => {
     if (negativePromptRef?.current) {
-      const input = negativePromptRef.current as HTMLInputElement
-      input.blur()
+      const input = negativePromptRef.current as HTMLInputElement;
+      input.blur();
     }
-  })
+  });
 
   const onKeyUp = (e: React.KeyboardEvent) => {
     // negativePrompt 回车触发 inpainting
     if (e.key === "Enter" && e.ctrlKey && settings.prompt.length !== 0) {
-      runInpainting()
+      runInpainting();
     }
-  }
+  };
 
   const renderCropper = () => {
     return (
       <RowContainer>
         <LabelTitle
-          text="Cropper"
-          toolTip="Inpainting on part of image, improve inference speed and reduce memory usage."
+          text="裁剪器"
+          toolTip="在图像的一部分上进行修复，提高推理速度并减少内存使用。"
         />
         <Switch
           id="cropper"
           checked={settings.showCropper}
           onCheckedChange={(value) => {
-            updateSettings({ showCropper: value })
+            updateSettings({ showCropper: value });
             if (value) {
-              updateSettings({ showExtender: false })
+              updateSettings({ showExtender: false });
             }
           }}
         />
       </RowContainer>
-    )
-  }
+    );
+  };
 
   const renderBrushNetSetting = () => {
     if (!settings.model.support_brushnet) {
-      return null
+      return null;
     }
 
     let toolTip =
-      "BrushNet is a plug-and-play image inpainting model works on any SD1.5 base models."
+      "BrushNet是一个即插即用的图像修复模型，适用于任何SD1.5基础模型。";
 
     return (
       <div className="flex flex-col gap-4">
@@ -138,7 +138,7 @@ const DiffusionOptions = () => {
               id="brushnet"
               checked={settings.enableBrushNet}
               onCheckedChange={(value) => {
-                updateEnableBrushNet(value)
+                updateEnableBrushNet(value);
               }}
             />
           </RowContainer>
@@ -161,7 +161,7 @@ const DiffusionOptions = () => {
               numberValue={settings.brushnetConditioningScale}
               allowFloat
               onNumberValueChange={(val) => {
-                updateSettings({ brushnetConditioningScale: val })
+                updateSettings({ brushnetConditioningScale: val });
               }}
             />
           </RowContainer>
@@ -171,7 +171,7 @@ const DiffusionOptions = () => {
               defaultValue={settings.brushnetMethod}
               value={settings.brushnetMethod}
               onValueChange={(value) => {
-                updateSettings({ brushnetMethod: value })
+                updateSettings({ brushnetMethod: value });
               }}
               disabled={!settings.enableBrushNet}
             >
@@ -192,16 +192,15 @@ const DiffusionOptions = () => {
         </div>
         <Separator />
       </div>
-    )
-  }
+    );
+  };
 
   const renderConterNetSetting = () => {
     if (!settings.model.support_controlnet) {
-      return null
+      return null;
     }
 
-    let toolTip =
-      "Using an additional conditioning image to control how an image is generated"
+    let toolTip = "使用额外的条件图像来控制图像生成的方式";
 
     return (
       <div className="flex flex-col gap-4">
@@ -216,7 +215,7 @@ const DiffusionOptions = () => {
               id="controlnet"
               checked={settings.enableControlnet}
               onCheckedChange={(value) => {
-                updateEnableControlnet(value)
+                updateEnableControlnet(value);
               }}
             />
           </RowContainer>
@@ -242,7 +241,7 @@ const DiffusionOptions = () => {
                 numberValue={settings.controlnetConditioningScale}
                 allowFloat
                 onNumberValueChange={(val) => {
-                  updateSettings({ controlnetConditioningScale: val })
+                  updateSettings({ controlnetConditioningScale: val });
                 }}
               />
             </RowContainer>
@@ -253,7 +252,7 @@ const DiffusionOptions = () => {
               defaultValue={settings.controlnetMethod}
               value={settings.controlnetMethod}
               onValueChange={(value) => {
-                updateSettings({ controlnetMethod: value })
+                updateSettings({ controlnetMethod: value });
               }}
               disabled={!settings.enableControlnet}
             >
@@ -274,16 +273,16 @@ const DiffusionOptions = () => {
         </div>
         <Separator />
       </div>
-    )
-  }
+    );
+  };
 
   const renderLCMLora = () => {
     if (!settings.model.support_lcm_lora) {
-      return null
+      return null;
     }
 
     let toolTip =
-      "Enable quality image generation in typically 2-8 steps. Suggest disabling guidance_scale by setting it to 0. You can also try values between 1.0 and 2.0. When LCM Lora is enabled, LCMSampler will be used automatically."
+      "启用高质量图像生成，通常只需2-8步。建议通过将guidance_scale设置为0来禁用它。您也可以尝试1.0到2.0之间的值。启用LCM Lora时，将自动使用LCMSampler。";
 
     return (
       <>
@@ -297,26 +296,26 @@ const DiffusionOptions = () => {
             id="lcm-lora"
             checked={settings.enableLCMLora}
             onCheckedChange={(value) => {
-              updateLCMLora(value)
+              updateLCMLora(value);
             }}
           />
         </RowContainer>
         <Separator />
       </>
-    )
-  }
+    );
+  };
 
   const renderNegativePrompt = () => {
     if (!settings.model.need_prompt) {
-      return null
+      return null;
     }
 
     return (
       <div className="flex flex-col gap-4">
         <LabelTitle
-          text="Negative prompt"
+          text="负面提示词"
           url="https://huggingface.co/docs/diffusers/main/en/using-diffusers/inpaint#negative-prompt"
-          toolTip="Negative prompt guides the model away from generating certain things in an image"
+          toolTip="负面提示词引导模型避免在图像中生成某些内容"
         />
         <div className="pl-2 pr-4">
           <Textarea
@@ -328,33 +327,30 @@ const DiffusionOptions = () => {
             id="negative-prompt"
             value={settings.negativePrompt}
             onInput={(evt: FormEvent<HTMLTextAreaElement>) => {
-              evt.preventDefault()
-              evt.stopPropagation()
-              const target = evt.target as HTMLTextAreaElement
-              updateSettings({ negativePrompt: target.value })
+              evt.preventDefault();
+              evt.stopPropagation();
+              const target = evt.target as HTMLTextAreaElement;
+              updateSettings({ negativePrompt: target.value });
             }}
           />
         </div>
       </div>
-    )
-  }
+    );
+  };
 
   const renderPaintByExample = () => {
     if (settings.model.name !== PAINT_BY_EXAMPLE) {
-      return null
+      return null;
     }
 
     return (
       <div>
         <RowContainer>
-          <LabelTitle
-            text="Example Image"
-            toolTip="An example image to guide image generation."
-          />
+          <LabelTitle text="示例图片" toolTip="用于指导图像生成的示例图片。" />
           <ImageUploadButton
-            tooltip="Upload example image"
+            tooltip="上传示例图片"
             onFileUpload={(file) => {
-              updateAppState({ paintByExampleFile: file })
+              updateAppState({ paintByExampleFile: file });
             }}
           >
             <Upload />
@@ -376,24 +372,24 @@ const DiffusionOptions = () => {
           className="w-full"
           disabled={isProcessing || !isExampleImageLoaded}
           onClick={() => {
-            runInpainting()
+            runInpainting();
           }}
         >
           Paint
         </Button>
       </div>
-    )
-  }
+    );
+  };
 
   const renderP2PImageGuidanceScale = () => {
     if (settings.model.name !== INSTRUCT_PIX2PIX) {
-      return null
+      return null;
     }
     return (
       <div className="flex flex-col gap-1">
         <LabelTitle
-          text="Image guidance scale"
-          toolTip="Push the generated image towards the inital image. Higher image guidance scale encourages generated images that are closely linked to the source image, usually at the expense of lower image quality."
+          text="图像引导比例"
+          toolTip="推动生成的图像朝向初始图像。更高的图像引导比例鼓励生成的图像与源图像紧密相关，通常以降低图像质量为代价。"
           url="https://huggingface.co/docs/diffusers/main/en/api/pipelines/pix2pix"
         />
         <RowContainer>
@@ -414,21 +410,21 @@ const DiffusionOptions = () => {
             numberValue={settings.p2pImageGuidanceScale}
             allowFloat
             onNumberValueChange={(val) => {
-              updateSettings({ p2pImageGuidanceScale: val })
+              updateSettings({ p2pImageGuidanceScale: val });
             }}
           />
         </RowContainer>
       </div>
-    )
-  }
+    );
+  };
 
   const renderStrength = () => {
     if (!settings.model.support_strength) {
-      return null
+      return null;
     }
 
     let toolTip =
-      "Strength is a measure of how much noise is added to the base image, which influences how similar the output is to the base image. Higher value means more noise and more different from the base image"
+      "强度是添加到基础图像的噪声量的度量，它影响输出与基础图像的相似程度。更高的值意味着更多的噪声和与基础图像更大的差异";
     // if (disable) {
     //   toolTip = "BrushNet is enabled, Strength is disabled."
     // }
@@ -436,7 +432,7 @@ const DiffusionOptions = () => {
     return (
       <RowContainer>
         <LabelTitle
-          text="Strength"
+          text="强度"
           url="https://huggingface.co/docs/diffusers/main/en/using-diffusers/inpaint#strength"
           toolTip={toolTip}
           // disabled={disable}
@@ -460,34 +456,34 @@ const DiffusionOptions = () => {
             numberValue={settings.sdStrength}
             allowFloat
             onNumberValueChange={(val) => {
-              updateSettings({ sdStrength: val })
+              updateSettings({ sdStrength: val });
             }}
             // disabled={disable}
           />
         </div>
       </RowContainer>
-    )
-  }
+    );
+  };
 
   const renderExtender = () => {
     if (!settings.model.support_outpainting) {
-      return null
+      return null;
     }
     return (
       <>
         <div className="flex flex-col gap-2">
           <RowContainer>
             <LabelTitle
-              text="Extender"
-              toolTip="Perform outpainting on images to expand it's content."
+              text="扩展器"
+              toolTip="在图像上执行外绘以扩展其内容。"
             />
             <Switch
               id="extender"
               checked={settings.showExtender}
               onCheckedChange={(value) => {
-                updateSettings({ showExtender: value })
+                updateSettings({ showExtender: value });
                 if (value) {
-                  updateSettings({ showCropper: false })
+                  updateSettings({ showCropper: false });
                 }
               }}
             />
@@ -498,7 +494,7 @@ const DiffusionOptions = () => {
               defaultValue={settings.extenderDirection}
               value={settings.extenderDirection}
               onValueChange={(value) => {
-                updateExtenderDirection(value as ExtenderDirection)
+                updateExtenderDirection(value as ExtenderDirection);
               }}
             >
               <SelectTrigger
@@ -548,21 +544,21 @@ const DiffusionOptions = () => {
         </div>
         <Separator />
       </>
-    )
-  }
+    );
+  };
 
   const renderPowerPaintTaskType = () => {
     return (
       <RowContainer>
         <LabelTitle
-          text="Task"
-          toolTip="PowerPaint task. When using extender, image-outpainting task will be auto used. For object-removal and image-outpainting, it is recommended to set the guidance_scale at 10 or above."
+          text="任务"
+          toolTip="PowerPaint任务。使用扩展器时，将自动使用图像外绘任务。对于对象移除和图像外绘，建议将guidance_scale设置为10或更高。"
         />
         <Select
           defaultValue={settings.powerpaintTask}
           value={settings.powerpaintTask}
           onValueChange={(value: PowerPaintTask) => {
-            updateSettings({ powerpaintTask: value })
+            updateSettings({ powerpaintTask: value });
           }}
           disabled={settings.showExtender}
         >
@@ -585,24 +581,24 @@ const DiffusionOptions = () => {
           </SelectContent>
         </Select>
       </RowContainer>
-    )
-  }
+    );
+  };
 
   const renderPowerPaintV1 = () => {
     if (settings.model.name !== POWERPAINT) {
-      return null
+      return null;
     }
     return (
       <>
         {renderPowerPaintTaskType()}
         <Separator />
       </>
-    )
-  }
+    );
+  };
 
   const renderPowerPaintV2 = () => {
     if (settings.model.support_powerpaint_v2 === false) {
-      return null
+      return null;
     }
 
     return (
@@ -610,29 +606,29 @@ const DiffusionOptions = () => {
         <RowContainer>
           <LabelTitle
             text="PowerPaint V2"
-            toolTip="PowerPaint is a plug-and-play image inpainting model works on any SD1.5 base models."
+            toolTip="PowerPaint是一个即插即用的图像修复模型，适用于任何SD1.5基础模型。"
           />
           <Switch
             id="powerpaint-v2"
             checked={settings.enablePowerPaintV2}
             onCheckedChange={(value) => {
-              updateEnablePowerPaintV2(value)
+              updateEnablePowerPaintV2(value);
             }}
           />
         </RowContainer>
         {renderPowerPaintTaskType()}
         <Separator />
       </>
-    )
-  }
+    );
+  };
 
   const renderSteps = () => {
     return (
       <RowContainer>
         <LabelTitle
           htmlFor="steps"
-          text="Steps"
-          toolTip="The number of denoising steps. More denoising steps usually lead to a higher quality image at the expense of slower inference."
+          text="步数"
+          toolTip="去噪步数。更多的去噪步数通常会导致更高质量的图像，但会降低推理速度。"
         />
 
         <div className="flex gap-4">
@@ -651,21 +647,21 @@ const DiffusionOptions = () => {
             numberValue={settings.sdSteps}
             allowFloat={false}
             onNumberValueChange={(val) => {
-              updateSettings({ sdSteps: val })
+              updateSettings({ sdSteps: val });
             }}
           />
         </div>
       </RowContainer>
-    )
-  }
+    );
+  };
 
   const renderGuidanceScale = () => {
     return (
       <RowContainer>
         <LabelTitle
-          text="Guidance"
+          text="引导比例"
           url="https://huggingface.co/docs/diffusers/main/en/using-diffusers/inpaint#guidance-scale"
-          toolTip="Guidance scale affects how aligned the text prompt and generated image are. Higher value means the prompt and generated image are closely aligned, so the output is a stricter interpretation of the prompt"
+          toolTip="引导比例影响文本提示词和生成图像的匹配程度。更高的值意味着提示词和生成的图像紧密匹配，因此输出是对提示词的更严格解释"
         />
         <div className="flex gap-4">
           <Slider
@@ -685,27 +681,27 @@ const DiffusionOptions = () => {
             numberValue={settings.sdGuidanceScale}
             allowFloat
             onNumberValueChange={(val) => {
-              updateSettings({ sdGuidanceScale: val })
+              updateSettings({ sdGuidanceScale: val });
             }}
           />
         </div>
       </RowContainer>
-    )
-  }
+    );
+  };
 
   const renderSampler = () => {
     if (settings.model.name === ANYTEXT) {
-      return null
+      return null;
     }
 
     return (
       <RowContainer>
-        <LabelTitle text="Sampler" />
+        <LabelTitle text="采样器" />
         <Select
           defaultValue={settings.sdSampler}
           value={settings.sdSampler}
           onValueChange={(value) => {
-            updateSettings({ sdSampler: value })
+            updateSettings({ sdSampler: value });
           }}
         >
           <SelectTrigger className="w-[175px] text-xs">
@@ -722,16 +718,16 @@ const DiffusionOptions = () => {
           </SelectContent>
         </Select>
       </RowContainer>
-    )
-  }
+    );
+  };
 
   const renderSeed = () => {
     return (
       <RowContainer>
         {/* 每次会从服务器返回更新该值 */}
         <LabelTitle
-          text="Seed"
-          toolTip="Using same parameters and a fixed seed can generate same result image."
+          text="种子"
+          toolTip="使用相同的参数和固定的种子可以生成相同的结果图像。"
         />
         {/* <Pin /> */}
         <div className="flex gap-2 justify-center items-center">
@@ -739,7 +735,7 @@ const DiffusionOptions = () => {
             id="seed"
             checked={settings.seedFixed}
             onCheckedChange={(value) => {
-              updateSettings({ seedFixed: value })
+              updateSettings({ seedFixed: value });
             }}
           />
           <NumberInput
@@ -749,21 +745,21 @@ const DiffusionOptions = () => {
             numberValue={settings.seed}
             allowFloat={false}
             onNumberValueChange={(val) => {
-              updateSettings({ seed: val })
+              updateSettings({ seed: val });
             }}
           />
         </div>
       </RowContainer>
-    )
-  }
+    );
+  };
 
   const renderMaskBlur = () => {
     return (
       <>
         <RowContainer>
           <LabelTitle
-            text="Mask blur"
-            toolTip="How much to blur the mask before processing, in pixels. Make the generated inpainting boundaries appear more natural."
+            text="蒙版模糊"
+            toolTip="处理前对蒙版进行模糊的程度，以像素为单位。使生成的修复边界看起来更自然。"
           />
           <div className="flex gap-4">
             <Slider
@@ -781,37 +777,37 @@ const DiffusionOptions = () => {
               numberValue={settings.sdMaskBlur}
               allowFloat={false}
               onNumberValueChange={(value) => {
-                updateSettings({ sdMaskBlur: value })
+                updateSettings({ sdMaskBlur: value });
               }}
             />
           </div>
         </RowContainer>
         <Separator />
       </>
-    )
-  }
+    );
+  };
 
   const renderMatchHistograms = () => {
     return (
       <>
         <RowContainer>
           <LabelTitle
-            text="Match histograms"
-            toolTip="Match the inpainting result histogram to the source image histogram"
+            text="匹配直方图"
+            toolTip="将修复结果的直方图与源图像的直方图匹配"
             url="https://github.com/Sanster/lama-cleaner/pull/143#issuecomment-1325859307"
           />
           <Switch
             id="match-histograms"
             checked={settings.sdMatchHistograms}
             onCheckedChange={(value) => {
-              updateSettings({ sdMatchHistograms: value })
+              updateSettings({ sdMatchHistograms: value });
             }}
           />
         </RowContainer>
         <Separator />
       </>
-    )
-  }
+    );
+  };
 
   const renderMaskAdjuster = () => {
     return (
@@ -820,8 +816,8 @@ const DiffusionOptions = () => {
           <RowContainer>
             <LabelTitle
               htmlFor="adjustMaskKernelSize"
-              text="Mask OP"
-              toolTip="Expand or shrink mask. Using the slider to adjust the kernel size for dilation or erosion."
+              text="蒙版操作"
+              toolTip="扩展或收缩蒙版。使用滑块调整膨胀或腐蚀的核大小。"
             />
             <div className="flex gap-4">
               <Slider
@@ -841,7 +837,7 @@ const DiffusionOptions = () => {
                 numberValue={settings.adjustMaskKernelSize}
                 allowFloat={false}
                 onNumberValueChange={(val) => {
-                  updateSettings({ adjustMaskKernelSize: val })
+                  updateSettings({ adjustMaskKernelSize: val });
                 }}
               />
             </div>
@@ -893,8 +889,8 @@ const DiffusionOptions = () => {
         </div>
         <Separator />
       </>
-    )
-  }
+    );
+  };
 
   return (
     <div className="flex flex-col gap-[14px] mt-4">
@@ -918,7 +914,7 @@ const DiffusionOptions = () => {
       {renderLCMLora()}
       {renderPaintByExample()}
     </div>
-  )
-}
+  );
+};
 
-export default DiffusionOptions
+export default DiffusionOptions;

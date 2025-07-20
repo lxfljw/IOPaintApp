@@ -1,22 +1,22 @@
-import { Keyboard } from "lucide-react"
-import { IconButton } from "@/components/ui/button"
-import { useToggle } from "@uidotdev/usehooks"
+import { Keyboard } from "lucide-react";
+import { IconButton } from "@/components/ui/button";
+import { useToggle } from "@uidotdev/usehooks";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "./ui/dialog"
-import useHotKey from "@/hooks/useHotkey"
+} from "./ui/dialog";
+import useHotKey from "@/hooks/useHotkey";
 
 interface ShortcutProps {
-  content: string
-  keys: string[]
+  content: string;
+  keys: string[];
 }
 
 function ShortCut(props: ShortcutProps) {
-  const { content, keys } = props
+  const { content, keys } = props;
 
   return (
     <div className="flex justify-between">
@@ -30,57 +30,54 @@ function ShortCut(props: ShortcutProps) {
         ))}
       </div>
     </div>
-  )
+  );
 }
 
 const isMac = function () {
-  return /macintosh|mac os x/i.test(navigator.userAgent)
-}
+  return /macintosh|mac os x/i.test(navigator.userAgent);
+};
 
 const CmdOrCtrl = () => {
-  return isMac() ? "Cmd" : "Ctrl"
-}
+  return isMac() ? "Cmd" : "Ctrl";
+};
 
 export function Shortcuts() {
-  const [open, toggleOpen] = useToggle(false)
+  const [open, toggleOpen] = useToggle(false);
 
   useHotKey("h", () => {
-    toggleOpen()
-  })
+    toggleOpen();
+  });
 
   return (
     <Dialog open={open} onOpenChange={toggleOpen}>
       <DialogTrigger asChild>
-        <IconButton tooltip="Hotkeys">
+        <IconButton tooltip="快捷键">
           <Keyboard />
         </IconButton>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Hotkeys</DialogTitle>
+          <DialogTitle>快捷键</DialogTitle>
           <div className="flex gap-2 flex-col pt-4">
-            <ShortCut content="Pan" keys={["Space + Drag"]} />
-            <ShortCut content="Reset Zoom/Pan" keys={["Esc"]} />
-            <ShortCut content="Decrease Brush Size" keys={["["]} />
-            <ShortCut content="Increase Brush Size" keys={["]"]} />
-            <ShortCut content="View Original Image" keys={["Hold Tab"]} />
+            <ShortCut content="平移" keys={["空格 + 拖动"]} />
+            <ShortCut content="重置缩放/平移" keys={["Esc"]} />
+            <ShortCut content="减小笔刷大小" keys={["["]} />
+            <ShortCut content="增大笔刷大小" keys={["]"]} />
+            <ShortCut content="查看原图" keys={["按住 Tab"]} />
 
-            <ShortCut content="Undo" keys={[CmdOrCtrl(), "Z"]} />
-            <ShortCut content="Redo" keys={[CmdOrCtrl(), "Shift", "Z"]} />
-            <ShortCut content="Copy Result" keys={[CmdOrCtrl(), "C"]} />
-            <ShortCut content="Paste Image" keys={[CmdOrCtrl(), "V"]} />
-            <ShortCut
-              content="Trigger Manually Inpainting"
-              keys={["Shift", "R"]}
-            />
-            <ShortCut content="Toggle Hotkeys Dialog" keys={["H"]} />
-            <ShortCut content="Toggle Settings Dialog" keys={["S"]} />
-            <ShortCut content="Toggle File Manager" keys={["F"]} />
+            <ShortCut content="撤销" keys={[CmdOrCtrl(), "Z"]} />
+            <ShortCut content="重做" keys={[CmdOrCtrl(), "Shift", "Z"]} />
+            <ShortCut content="复制结果" keys={[CmdOrCtrl(), "C"]} />
+            <ShortCut content="粘贴图片" keys={[CmdOrCtrl(), "V"]} />
+            <ShortCut content="手动触发修复" keys={["Shift", "R"]} />
+            <ShortCut content="显示快捷键" keys={["H"]} />
+            <ShortCut content="显示设置" keys={["S"]} />
+            <ShortCut content="显示文件管理器" keys={["F"]} />
           </div>
         </DialogHeader>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
 
-export default Shortcuts
+export default Shortcuts;

@@ -12,4 +12,5 @@ tmp/
 iopaint/web_app/
 node_modules/
 release/
+build/
 

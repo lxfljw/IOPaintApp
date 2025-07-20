@@ -1,8 +1,8 @@
-import { persist } from "zustand/middleware"
-import { shallow } from "zustand/shallow"
-import { immer } from "zustand/middleware/immer"
-import { castDraft } from "immer"
-import { createWithEqualityFn } from "zustand/traditional"
+import { persist } from "zustand/middleware";
+import { shallow } from "zustand/shallow";
+import { immer } from "zustand/middleware/immer";
+import { castDraft } from "immer";
+import { createWithEqualityFn } from "zustand/traditional";
 import {
   AdjustMaskOperate,
   CV2Flag,
@@ -18,7 +18,7 @@ import {
   Size,
   SortBy,
   SortOrder,
-} from "./types"
+} from "./types";
 import {
   BRUSH_COLOR,
   DEFAULT_BRUSH_SIZE,
@@ -26,7 +26,7 @@ import {
   MAX_BRUSH_SIZE,
   MODEL_TYPE_INPAINT,
   PAINT_BY_EXAMPLE,
-} from "./const"
+} from "./const";
 import {
   blobToImage,
   canvasToImage,
@@ -34,207 +34,211 @@ import {
   generateMask,
   loadImage,
   srcToFile,
-} from "./utils"
-import inpaint, { getGenInfo, postAdjustMask, runPlugin } from "./api"
-import { toast } from "@/components/ui/use-toast"
+} from "./utils";
+import inpaint, { getGenInfo, postAdjustMask, runPlugin } from "./api";
+import { toast } from "@/components/ui/use-toast";
 
 type FileManagerState = {
-  sortBy: SortBy
-  sortOrder: SortOrder
-  layout: "rows" | "masonry"
-  searchText: string
-  inputDirectory: string
-  outputDirectory: string
-}
+  sortBy: SortBy;
+  sortOrder: SortOrder;
+  layout: "rows" | "masonry";
+  viewMode: "grid" | "list";
+  searchText: string;
+  inputDirectory: string;
+  outputDirectory: string;
+};
 
 type CropperState = {
-  x: number
-  y: number
-  width: number
-  height: number
-}
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
 
 export type Settings = {
-  model: ModelInfo
-  enableDownloadMask: boolean
-  enableManualInpainting: boolean
-  enableUploadMask: boolean
-  enableAutoExtractPrompt: boolean
-  showCropper: boolean
-  showExtender: boolean
-  extenderDirection: ExtenderDirection
+  model: ModelInfo;
+  enableDownloadMask: boolean;
+  enableManualInpainting: boolean;
+  enableUploadMask: boolean;
+  enableAutoExtractPrompt: boolean;
+  showCropper: boolean;
+  showExtender: boolean;
+  extenderDirection: ExtenderDirection;
 
   // For LDM
-  ldmSteps: number
-  ldmSampler: LDMSampler
+  ldmSteps: number;
+  ldmSampler: LDMSampler;
 
   // For ZITS
-  zitsWireframe: boolean
+  zitsWireframe: boolean;
 
   // For OpenCV2
-  cv2Radius: number
-  cv2Flag: CV2Flag
+  cv2Radius: number;
+  cv2Flag: CV2Flag;
 
   // For Diffusion moel
-  prompt: string
-  negativePrompt: string
-  seed: number
-  seedFixed: boolean
+  prompt: string;
+  negativePrompt: string;
+  seed: number;
+  seedFixed: boolean;
 
   // For SD
-  sdMaskBlur: number
-  sdStrength: number
-  sdSteps: number
-  sdGuidanceScale: number
-  sdSampler: string
-  sdMatchHistograms: boolean
-  sdScale: number
+  sdMaskBlur: number;
+  sdStrength: number;
+  sdSteps: number;
+  sdGuidanceScale: number;
+  sdSampler: string;
+  sdMatchHistograms: boolean;
+  sdScale: number;
 
   // Pix2Pix
-  p2pImageGuidanceScale: number
+  p2pImageGuidanceScale: number;
 
   // ControlNet
-  enableControlnet: boolean
-  controlnetConditioningScale: number
-  controlnetMethod: string
+  enableControlnet: boolean;
+  controlnetConditioningScale: number;
+  controlnetMethod: string;
 
   // BrushNet
-  enableBrushNet: boolean
-  brushnetMethod: string
-  brushnetConditioningScale: number
+  enableBrushNet: boolean;
+  brushnetMethod: string;
+  brushnetConditioningScale: number;
 
-  enableLCMLora: boolean
+  enableLCMLora: boolean;
 
   // PowerPaint
-  enablePowerPaintV2: boolean
-  powerpaintTask: PowerPaintTask
+  enablePowerPaintV2: boolean;
+  powerpaintTask: PowerPaintTask;
 
   // AdjustMask
-  adjustMaskKernelSize: number
-}
+  adjustMaskKernelSize: number;
+};
 
 type InteractiveSegState = {
-  isInteractiveSeg: boolean
-  tmpInteractiveSegMask: HTMLImageElement | null
-  clicks: number[][]
-}
+  isInteractiveSeg: boolean;
+  tmpInteractiveSegMask: HTMLImageElement | null;
+  clicks: number[][];
+};
 
 type EditorState = {
-  baseBrushSize: number
-  brushSizeScale: number
-  renders: HTMLImageElement[]
-  lineGroups: LineGroup[]
-  lastLineGroup: LineGroup
-  curLineGroup: LineGroup
+  baseBrushSize: number;
+  brushSizeScale: number;
+  renders: HTMLImageElement[];
+  lineGroups: LineGroup[];
+  lastLineGroup: LineGroup;
+  curLineGroup: LineGroup;
 
   // mask from interactive-seg or other segmentation models
-  extraMasks: HTMLImageElement[]
-  prevExtraMasks: HTMLImageElement[]
+  extraMasks: HTMLImageElement[];
+  prevExtraMasks: HTMLImageElement[];
 
-  temporaryMasks: HTMLImageElement[]
+  temporaryMasks: HTMLImageElement[];
   // redo 相关
-  redoRenders: HTMLImageElement[]
-  redoCurLines: Line[]
-  redoLineGroups: LineGroup[]
-}
+  redoRenders: HTMLImageElement[];
+  redoCurLines: Line[];
+  redoLineGroups: LineGroup[];
+};
 
 type AppState = {
-  file: File | null
-  paintByExampleFile: File | null
-  customMask: File | null
-  imageHeight: number
-  imageWidth: number
-  isInpainting: boolean
-  isPluginRunning: boolean
-  isAdjustingMask: boolean
-  windowSize: Size
-  editorState: EditorState
-  disableShortCuts: boolean
+  file: File | null;
+  paintByExampleFile: File | null;
+  customMask: File | null;
+  imageHeight: number;
+  imageWidth: number;
+  isInpainting: boolean;
+  isPluginRunning: boolean;
+  isAdjustingMask: boolean;
+  windowSize: Size;
+  editorState: EditorState;
+  disableShortCuts: boolean;
 
-  interactiveSegState: InteractiveSegState
-  fileManagerState: FileManagerState
+  interactiveSegState: InteractiveSegState;
+  fileManagerState: FileManagerState;
 
-  cropperState: CropperState
-  extenderState: CropperState
-  isCropperExtenderResizing: boolean
+  cropperState: CropperState;
+  extenderState: CropperState;
+  isCropperExtenderResizing: boolean;
 
-  serverConfig: ServerConfig
+  serverConfig: ServerConfig;
 
-  settings: Settings
-}
+  settings: Settings;
+};
 
 type AppAction = {
-  updateAppState: (newState: Partial<AppState>) => void
-  setFile: (file: File) => Promise<void>
-  setCustomFile: (file: File) => void
-  setIsInpainting: (newValue: boolean) => void
-  getIsProcessing: () => boolean
-  setBaseBrushSize: (newValue: number) => void
-  decreaseBaseBrushSize: () => void
-  increaseBaseBrushSize: () => void
-  getBrushSize: () => number
-  setImageSize: (width: number, height: number) => void
+  updateAppState: (newState: Partial<AppState>) => void;
+  setFile: (file: File) => Promise<void>;
+  setCustomFile: (file: File) => void;
+  setIsInpainting: (newValue: boolean) => void;
+  getIsProcessing: () => boolean;
+  setBaseBrushSize: (newValue: number) => void;
+  decreaseBaseBrushSize: () => void;
+  increaseBaseBrushSize: () => void;
+  getBrushSize: () => number;
+  setImageSize: (width: number, height: number) => void;
 
-  isSD: () => boolean
+  isSD: () => boolean;
 
-  setCropperX: (newValue: number) => void
-  setCropperY: (newValue: number) => void
-  setCropperWidth: (newValue: number) => void
-  setCropperHeight: (newValue: number) => void
+  setCropperX: (newValue: number) => void;
+  setCropperY: (newValue: number) => void;
+  setCropperWidth: (newValue: number) => void;
+  setCropperHeight: (newValue: number) => void;
 
-  setExtenderX: (newValue: number) => void
-  setExtenderY: (newValue: number) => void
-  setExtenderWidth: (newValue: number) => void
-  setExtenderHeight: (newValue: number) => void
+  setExtenderX: (newValue: number) => void;
+  setExtenderY: (newValue: number) => void;
+  setExtenderWidth: (newValue: number) => void;
+  setExtenderHeight: (newValue: number) => void;
 
-  setIsCropperExtenderResizing: (newValue: boolean) => void
-  updateExtenderDirection: (newValue: ExtenderDirection) => void
-  resetExtender: (width: number, height: number) => void
-  updateExtenderByBuiltIn: (direction: ExtenderDirection, scale: number) => void
+  setIsCropperExtenderResizing: (newValue: boolean) => void;
+  updateExtenderDirection: (newValue: ExtenderDirection) => void;
+  resetExtender: (width: number, height: number) => void;
+  updateExtenderByBuiltIn: (
+    direction: ExtenderDirection,
+    scale: number
+  ) => void;
 
-  setServerConfig: (newValue: ServerConfig) => void
-  setSeed: (newValue: number) => void
-  updateSettings: (newSettings: Partial<Settings>) => void
+  setServerConfig: (newValue: ServerConfig) => void;
+  setSeed: (newValue: number) => void;
+  updateSettings: (newSettings: Partial<Settings>) => void;
 
   // 互斥
-  updateEnablePowerPaintV2: (newValue: boolean) => void
-  updateEnableBrushNet: (newValue: boolean) => void
-  updateEnableControlnet: (newValue: boolean) => void
-  updateLCMLora: (newValue: boolean) => void
+  updateEnablePowerPaintV2: (newValue: boolean) => void;
+  updateEnableBrushNet: (newValue: boolean) => void;
+  updateEnableControlnet: (newValue: boolean) => void;
+  updateLCMLora: (newValue: boolean) => void;
 
-  setModel: (newModel: ModelInfo) => void
-  updateFileManagerState: (newState: Partial<FileManagerState>) => void
-  updateInteractiveSegState: (newState: Partial<InteractiveSegState>) => void
-  resetInteractiveSegState: () => void
-  handleInteractiveSegAccept: () => void
-  handleFileManagerMaskSelect: (blob: Blob) => Promise<void>
-  showPromptInput: () => boolean
+  setModel: (newModel: ModelInfo) => void;
+  updateFileManagerState: (newState: Partial<FileManagerState>) => void;
+  updateInteractiveSegState: (newState: Partial<InteractiveSegState>) => void;
+  resetInteractiveSegState: () => void;
+  handleInteractiveSegAccept: () => void;
+  handleFileManagerMaskSelect: (blob: Blob) => Promise<void>;
+  showPromptInput: () => boolean;
 
-  runInpainting: () => Promise<void>
-  showPrevMask: () => Promise<void>
-  hidePrevMask: () => void
+  runInpainting: () => Promise<void>;
+  showPrevMask: () => Promise<void>;
+  hidePrevMask: () => void;
   runRenderablePlugin: (
     genMask: boolean,
     pluginName: string,
     params?: PluginParams
-  ) => Promise<void>
+  ) => Promise<void>;
 
   // EditorState
-  getCurrentTargetFile: () => Promise<File>
-  updateEditorState: (newState: Partial<EditorState>) => void
-  runMannually: () => boolean
-  handleCanvasMouseDown: (point: Point) => void
-  handleCanvasMouseMove: (point: Point) => void
-  cleanCurLineGroup: () => void
-  resetRedoState: () => void
-  undo: () => void
-  redo: () => void
-  undoDisabled: () => boolean
-  redoDisabled: () => boolean
+  getCurrentTargetFile: () => Promise<File>;
+  updateEditorState: (newState: Partial<EditorState>) => void;
+  runMannually: () => boolean;
+  handleCanvasMouseDown: (point: Point) => void;
+  handleCanvasMouseMove: (point: Point) => void;
+  cleanCurLineGroup: () => void;
+  resetRedoState: () => void;
+  undo: () => void;
+  redo: () => void;
+  undoDisabled: () => boolean;
+  redoDisabled: () => boolean;
 
-  adjustMask: (operate: AdjustMaskOperate) => Promise<void>
-  clearMask: () => void
-}
+  adjustMask: (operate: AdjustMaskOperate) => Promise<void>;
+  clearMask: () => void;
+};
 
 const defaultValues: AppState = {
   file: null,
@@ -288,8 +292,9 @@ const defaultValues: AppState = {
 
   fileManagerState: {
     sortBy: SortBy.CTIME,
-    sortOrder: SortOrder.DESCENDING,
+    sortOrder: SortOrder.DESC,
     layout: "masonry",
+    viewMode: "grid",
     searchText: "",
     inputDirectory: "",
     outputDirectory: "",
@@ -362,7 +367,7 @@ const defaultValues: AppState = {
     powerpaintTask: PowerPaintTask.text_guided,
     adjustMaskKernelSize: 12,
   },
-}
+};
 
 export const useStore = createWithEqualityFn<AppState & AppAction>()(
   persist(
@@ -371,14 +376,14 @@ export const useStore = createWithEqualityFn<AppState & AppAction>()(
 
       showPrevMask: async () => {
         if (get().settings.showExtender) {
-          return
+          return;
         }
         const { lastLineGroup, curLineGroup, prevExtraMasks, extraMasks } =
-          get().editorState
+          get().editorState;
         if (curLineGroup.length !== 0 || extraMasks.length !== 0) {
-          return
+          return;
         }
-        const { imageWidth, imageHeight } = get()
+        const { imageWidth, imageHeight } = get();
 
         const maskCanvas = generateMask(
           imageWidth,
@@ -386,37 +391,41 @@ export const useStore = createWithEqualityFn<AppState & AppAction>()(
           [lastLineGroup],
           prevExtraMasks,
           BRUSH_COLOR
-        )
+        );
         try {
-          const maskImage = await canvasToImage(maskCanvas)
+          const maskImage = await canvasToImage(maskCanvas);
           set((state) => {
-            state.editorState.temporaryMasks.push(castDraft(maskImage))
-          })
-        } catch (e) {
-          console.error(e)
-          return
+            state.editorState.temporaryMasks.push(castDraft(maskImage));
+          });
+        } catch (e: unknown) {
+          toast({
+            variant: "destructive",
+            title: "出错了！",
+            description: e instanceof Error ? e.message : String(e),
+          });
+          return;
         }
       },
       hidePrevMask: () => {
         set((state) => {
-          state.editorState.temporaryMasks = []
-        })
+          state.editorState.temporaryMasks = [];
+        });
       },
 
       getCurrentTargetFile: async (): Promise<File> => {
-        const file = get().file! // 一定是在 file 加载了以后才可能调用这个函数
-        const renders = get().editorState.renders
+        const file = get().file!; // 一定是在 file 加载了以后才可能调用这个函数
+        const renders = get().editorState.renders;
 
-        let targetFile = file
+        let targetFile = file;
         if (renders.length > 0) {
-          const lastRender = renders[renders.length - 1]
+          const lastRender = renders[renders.length - 1];
           targetFile = await srcToFile(
             lastRender.currentSrc,
             file.name,
             file.type
-          )
+          );
         }
-        return targetFile
+        return targetFile;
       },
 
       runInpainting: async () => {
@@ -429,9 +438,9 @@ export const useStore = createWithEqualityFn<AppState & AppAction>()(
           settings,
           cropperState,
           extenderState,
-        } = get()
+        } = get();
         if (isInpainting || file === null) {
-          return
+          return;
         }
         if (
           get().settings.model.support_outpainting &&
@@ -441,7 +450,7 @@ export const useStore = createWithEqualityFn<AppState & AppAction>()(
           extenderState.height === imageHeight &&
           extenderState.width === imageWidth
         ) {
-          return
+          return;
         }
 
         const {
@@ -451,24 +460,24 @@ export const useStore = createWithEqualityFn<AppState & AppAction>()(
           renders,
           prevExtraMasks,
           extraMasks,
-        } = get().editorState
+        } = get().editorState;
 
         const useLastLineGroup =
           curLineGroup.length === 0 &&
           extraMasks.length === 0 &&
-          !settings.showExtender
+          !settings.showExtender;
 
         // useLastLineGroup 的影响
         // 1. 使用上一次的 mask
         // 2. 结果替换当前 render
-        let maskImages: HTMLImageElement[] = []
-        let maskLineGroup: LineGroup = []
+        let maskImages: HTMLImageElement[] = [];
+        let maskLineGroup: LineGroup = [];
         if (useLastLineGroup === true) {
-          maskLineGroup = lastLineGroup
-          maskImages = prevExtraMasks
+          maskLineGroup = lastLineGroup;
+          maskImages = prevExtraMasks;
         } else {
-          maskLineGroup = curLineGroup
-          maskImages = extraMasks
+          maskLineGroup = curLineGroup;
+          maskImages = extraMasks;
         }
 
         if (
@@ -479,34 +488,34 @@ export const useStore = createWithEqualityFn<AppState & AppAction>()(
           toast({
             variant: "destructive",
             description: "Please draw mask on picture",
-          })
-          return
+          });
+          return;
         }
 
-        const newLineGroups = [...lineGroups, maskLineGroup]
+        const newLineGroups = [...lineGroups, maskLineGroup];
 
         set((state) => {
-          state.isInpainting = true
-        })
+          state.isInpainting = true;
+        });
 
-        let targetFile = file
+        let targetFile = file;
         if (useLastLineGroup === true) {
           // renders.length == 1 还是用原来的
           if (renders.length > 1) {
-            const lastRender = renders[renders.length - 2]
+            const lastRender = renders[renders.length - 2];
             targetFile = await srcToFile(
               lastRender.currentSrc,
               file.name,
               file.type
-            )
+            );
           }
         } else if (renders.length > 0) {
-          const lastRender = renders[renders.length - 1]
+          const lastRender = renders[renders.length - 1];
           targetFile = await srcToFile(
             lastRender.currentSrc,
             file.name,
             file.type
-          )
+          );
         }
 
         const maskCanvas = generateMask(
@@ -515,12 +524,12 @@ export const useStore = createWithEqualityFn<AppState & AppAction>()(
           [maskLineGroup],
           maskImages,
           BRUSH_COLOR
-        )
+        );
         if (useLastLineGroup) {
-          const temporaryMask = await canvasToImage(maskCanvas)
+          const temporaryMask = await canvasToImage(maskCanvas);
           set((state) => {
-            state.editorState.temporaryMasks = castDraft([temporaryMask])
-          })
+            state.editorState.temporaryMasks = castDraft([temporaryMask]);
+          });
         }
 
         try {
@@ -531,16 +540,16 @@ export const useStore = createWithEqualityFn<AppState & AppAction>()(
             extenderState,
             dataURItoBlob(maskCanvas.toDataURL()),
             paintByExampleFile
-          )
+          );
 
-          const { blob, seed } = res
+          const { blob, seed } = res;
           if (seed) {
-            get().setSeed(parseInt(seed, 10))
+            get().setSeed(parseInt(seed, 10));
           }
-          const newRender = new Image()
-          await loadImage(newRender, blob)
-          const newRenders = [...renders, newRender]
-          get().setImageSize(newRender.width, newRender.height)
+          const newRender = new Image();
+          await loadImage(newRender, blob);
+          const newRenders = [...renders, newRender];
+          get().setImageSize(newRender.width, newRender.height);
           get().updateEditorState({
             renders: newRenders,
             lineGroups: newLineGroups,
@@ -548,19 +557,20 @@ export const useStore = createWithEqualityFn<AppState & AppAction>()(
             curLineGroup: [],
             extraMasks: [],
             prevExtraMasks: maskImages,
-          })
-        } catch (e: any) {
+          });
+        } catch (e: unknown) {
           toast({
             variant: "destructive",
-            description: e.message ? e.message : e.toString(),
-          })
+            title: "出错了！",
+            description: e instanceof Error ? e.message : String(e),
+          });
         }
 
-        get().resetRedoState()
+        get().resetRedoState();
         set((state) => {
-          state.isInpainting = false
-          state.editorState.temporaryMasks = []
-        })
+          state.isInpainting = false;
+          state.editorState.temporaryMasks = [];
+        });
       },
 
       runRenderablePlugin: async (
@@ -568,120 +578,121 @@ export const useStore = createWithEqualityFn<AppState & AppAction>()(
         pluginName: string,
         params: PluginParams = { upscale: 1 }
       ) => {
-        const { renders, lineGroups } = get().editorState
+        const { renders, lineGroups } = get().editorState;
         set((state) => {
-          state.isPluginRunning = true
-        })
+          state.isPluginRunning = true;
+        });
 
         try {
-          const start = new Date()
-          const targetFile = await get().getCurrentTargetFile()
+          const start = new Date();
+          const targetFile = await get().getCurrentTargetFile();
           const res = await runPlugin(
             genMask,
             pluginName,
             targetFile,
             params.upscale
-          )
-          const { blob } = res
+          );
+          const { blob } = res;
 
           if (!genMask) {
-            const newRender = new Image()
-            await loadImage(newRender, blob)
-            get().setImageSize(newRender.width, newRender.height)
-            const newRenders = [...renders, newRender]
-            const newLineGroups = [...lineGroups, []]
+            const newRender = new Image();
+            await loadImage(newRender, blob);
+            get().setImageSize(newRender.width, newRender.height);
+            const newRenders = [...renders, newRender];
+            const newLineGroups = [...lineGroups, []];
             get().updateEditorState({
               renders: newRenders,
               lineGroups: newLineGroups,
-            })
+            });
           } else {
-            const newMask = new Image()
-            await loadImage(newMask, blob)
+            const newMask = new Image();
+            await loadImage(newMask, blob);
             set((state) => {
-              state.editorState.extraMasks.push(castDraft(newMask))
-            })
+              state.editorState.extraMasks.push(castDraft(newMask));
+            });
           }
-          const end = new Date()
-          const time = end.getTime() - start.getTime()
+          const end = new Date();
+          const time = end.getTime() - start.getTime();
           toast({
             description: `Run ${pluginName} successfully in ${time / 1000}s`,
-          })
-        } catch (e: any) {
+          });
+        } catch (e: unknown) {
           toast({
             variant: "destructive",
-            description: e.message ? e.message : e.toString(),
-          })
+            title: "出错了！",
+            description: e instanceof Error ? e.message : String(e),
+          });
         }
         set((state) => {
-          state.isPluginRunning = false
-        })
+          state.isPluginRunning = false;
+        });
       },
 
       // Edirot State //
       updateEditorState: (newState: Partial<EditorState>) => {
         set((state) => {
-          state.editorState = castDraft({ ...state.editorState, ...newState })
-        })
+          state.editorState = castDraft({ ...state.editorState, ...newState });
+        });
       },
 
       cleanCurLineGroup: () => {
-        get().updateEditorState({ curLineGroup: [] })
+        get().updateEditorState({ curLineGroup: [] });
       },
 
       handleCanvasMouseDown: (point: Point) => {
-        let lineGroup: LineGroup = []
-        const state = get()
+        let lineGroup: LineGroup = [];
+        const state = get();
         if (state.runMannually()) {
-          lineGroup = [...state.editorState.curLineGroup]
+          lineGroup = [...state.editorState.curLineGroup];
         }
-        lineGroup.push({ size: state.getBrushSize(), pts: [point] })
+        lineGroup.push({ size: state.getBrushSize(), pts: [point] });
         set((state) => {
-          state.editorState.curLineGroup = lineGroup
-        })
+          state.editorState.curLineGroup = lineGroup;
+        });
       },
 
       handleCanvasMouseMove: (point: Point) => {
         set((state) => {
-          const curLineGroup = state.editorState.curLineGroup
+          const curLineGroup = state.editorState.curLineGroup;
           if (curLineGroup.length) {
-            curLineGroup[curLineGroup.length - 1].pts.push(point)
+            curLineGroup[curLineGroup.length - 1].pts.push(point);
           }
-        })
+        });
       },
 
       runMannually: (): boolean => {
-        const state = get()
+        const state = get();
         return (
           state.settings.enableManualInpainting ||
           state.settings.model.model_type !== MODEL_TYPE_INPAINT
-        )
+        );
       },
 
       getIsProcessing: (): boolean => {
         return (
           get().isInpainting || get().isPluginRunning || get().isAdjustingMask
-        )
+        );
       },
 
       isSD: (): boolean => {
-        return get().settings.model.model_type !== MODEL_TYPE_INPAINT
+        return get().settings.model.model_type !== MODEL_TYPE_INPAINT;
       },
 
       // undo/redo
 
       undoDisabled: (): boolean => {
-        const editorState = get().editorState
+        const editorState = get().editorState;
         if (editorState.renders.length > 0) {
-          return false
+          return false;
         }
         if (get().runMannually()) {
           if (editorState.curLineGroup.length === 0) {
-            return true
+            return true;
           }
         } else if (editorState.renders.length === 0) {
-          return true
+          return true;
         }
-        return false
+        return false;
       },
 
       undo: () => {
@@ -691,47 +702,47 @@ export const useStore = createWithEqualityFn<AppState & AppAction>()(
         ) {
           // undoStroke
           set((state) => {
-            const editorState = state.editorState
+            const editorState = state.editorState;
             if (editorState.curLineGroup.length === 0) {
-              return
+              return;
             }
-            editorState.lastLineGroup = []
-            const lastLine = editorState.curLineGroup.pop()!
-            editorState.redoCurLines.push(lastLine)
-          })
+            editorState.lastLineGroup = [];
+            const lastLine = editorState.curLineGroup.pop()!;
+            editorState.redoCurLines.push(lastLine);
+          });
         } else {
           set((state) => {
-            const editorState = state.editorState
+            const editorState = state.editorState;
             if (
               editorState.renders.length === 0 ||
               editorState.lineGroups.length === 0
             ) {
-              return
+              return;
             }
-            const lastLineGroup = editorState.lineGroups.pop()!
-            editorState.redoLineGroups.push(lastLineGroup)
-            editorState.redoCurLines = []
-            editorState.curLineGroup = []
+            const lastLineGroup = editorState.lineGroups.pop()!;
+            editorState.redoLineGroups.push(lastLineGroup);
+            editorState.redoCurLines = [];
+            editorState.curLineGroup = [];
 
-            const lastRender = editorState.renders.pop()!
-            editorState.redoRenders.push(lastRender)
-          })
+            const lastRender = editorState.renders.pop()!;
+            editorState.redoRenders.push(lastRender);
+          });
         }
       },
 
       redoDisabled: (): boolean => {
-        const editorState = get().editorState
+        const editorState = get().editorState;
         if (editorState.redoRenders.length > 0) {
-          return false
+          return false;
         }
         if (get().runMannually()) {
           if (editorState.redoCurLines.length === 0) {
-            return true
+            return true;
           }
         } else if (editorState.redoRenders.length === 0) {
-          return true
+          return true;
         }
-        return false
+        return false;
       },
 
       redo: () => {
@@ -740,66 +751,66 @@ export const useStore = createWithEqualityFn<AppState & AppAction>()(
           get().editorState.redoCurLines.length !== 0
         ) {
           set((state) => {
-            const editorState = state.editorState
+            const editorState = state.editorState;
             if (editorState.redoCurLines.length === 0) {
-              return
+              return;
             }
-            const line = editorState.redoCurLines.pop()!
-            editorState.curLineGroup.push(line)
-          })
+            const line = editorState.redoCurLines.pop()!;
+            editorState.curLineGroup.push(line);
+          });
         } else {
           set((state) => {
-            const editorState = state.editorState
+            const editorState = state.editorState;
             if (
               editorState.redoRenders.length === 0 ||
               editorState.redoLineGroups.length === 0
             ) {
-              return
+              return;
             }
-            const lastLineGroup = editorState.redoLineGroups.pop()!
-            editorState.lineGroups.push(lastLineGroup)
-            editorState.curLineGroup = []
+            const lastLineGroup = editorState.redoLineGroups.pop()!;
+            editorState.lineGroups.push(lastLineGroup);
+            editorState.curLineGroup = [];
 
-            const lastRender = editorState.redoRenders.pop()!
-            editorState.renders.push(lastRender)
-          })
+            const lastRender = editorState.redoRenders.pop()!;
+            editorState.renders.push(lastRender);
+          });
         }
       },
 
       resetRedoState: () => {
         set((state) => {
-          state.editorState.redoCurLines = []
-          state.editorState.redoLineGroups = []
-          state.editorState.redoRenders = []
-        })
+          state.editorState.redoCurLines = [];
+          state.editorState.redoLineGroups = [];
+          state.editorState.redoRenders = [];
+        });
       },
 
       //****//
 
       updateAppState: (newState: Partial<AppState>) => {
-        set(() => newState)
+        set(() => newState);
       },
 
       getBrushSize: (): number => {
         return (
           get().editorState.baseBrushSize * get().editorState.brushSizeScale
-        )
+        );
       },
 
       showPromptInput: (): boolean => {
-        const model = get().settings.model
+        const model = get().settings.model;
         return (
           model.model_type !== MODEL_TYPE_INPAINT &&
           model.name !== PAINT_BY_EXAMPLE
-        )
+        );
       },
 
       setServerConfig: (newValue: ServerConfig) => {
         set((state) => {
-          state.serverConfig = newValue
-          state.settings.enableControlnet = newValue.enableControlnet
-          state.settings.controlnetMethod = newValue.controlnetMethod
-        })
+          state.serverConfig = newValue;
+          state.settings.enableControlnet = newValue.enableControlnet;
+          state.settings.controlnetMethod = newValue.controlnetMethod;
+        });
       },
 
       updateSettings: (newSettings: Partial<Settings>) => {
@@ -807,63 +818,63 @@ export const useStore = createWithEqualityFn<AppState & AppAction>()(
           state.settings = {
             ...state.settings,
             ...newSettings,
-          }
-        })
+          };
+        });
       },
 
       updateEnablePowerPaintV2: (newValue: boolean) => {
-        get().updateSettings({ enablePowerPaintV2: newValue })
+        get().updateSettings({ enablePowerPaintV2: newValue });
         if (newValue) {
           get().updateSettings({
             enableBrushNet: false,
             enableControlnet: false,
             enableLCMLora: false,
-          })
+          });
         }
       },
 
       updateEnableBrushNet: (newValue: boolean) => {
-        get().updateSettings({ enableBrushNet: newValue })
+        get().updateSettings({ enableBrushNet: newValue });
         if (newValue) {
           get().updateSettings({
             enablePowerPaintV2: false,
             enableControlnet: false,
             enableLCMLora: false,
-          })
+          });
         }
       },
 
       updateEnableControlnet(newValue) {
-        get().updateSettings({ enableControlnet: newValue })
+        get().updateSettings({ enableControlnet: newValue });
         if (newValue) {
           get().updateSettings({
             enablePowerPaintV2: false,
             enableBrushNet: false,
-          })
+          });
         }
       },
 
       updateLCMLora(newValue) {
-        get().updateSettings({ enableLCMLora: newValue })
+        get().updateSettings({ enableLCMLora: newValue });
         if (newValue) {
           get().updateSettings({
             enablePowerPaintV2: false,
             enableBrushNet: false,
-          })
+          });
         }
       },
 
       setModel: (newModel: ModelInfo) => {
         set((state) => {
-          state.settings.model = newModel
+          state.settings.model = newModel;
 
           if (
             newModel.support_controlnet &&
             !newModel.controlnets.includes(state.settings.controlnetMethod)
           ) {
-            state.settings.controlnetMethod = newModel.controlnets[0]
+            state.settings.controlnetMethod = newModel.controlnets[0];
           }
-        })
+        });
       },
 
       updateFileManagerState: (newState: Partial<FileManagerState>) => {
@@ -871,8 +882,8 @@ export const useStore = createWithEqualityFn<AppState & AppAction>()(
           state.fileManagerState = {
             ...state.fileManagerState,
             ...newState,
-          }
-        })
+          };
+        });
       },
 
       updateInteractiveSegState: (newState: Partial<InteractiveSegState>) => {
@@ -883,12 +894,12 @@ export const useStore = createWithEqualityFn<AppState & AppAction>()(
               ...state.interactiveSegState,
               ...newState,
             },
-          }
-        })
+          };
+        });
       },
 
       resetInteractiveSegState: () => {
-        get().updateInteractiveSegState(defaultValues.interactiveSegState)
+        get().updateInteractiveSegState(defaultValues.interactiveSegState);
       },
 
       handleInteractiveSegAccept: () => {
@@ -896,220 +907,221 @@ export const useStore = createWithEqualityFn<AppState & AppAction>()(
           if (state.interactiveSegState.tmpInteractiveSegMask) {
             state.editorState.extraMasks.push(
               castDraft(state.interactiveSegState.tmpInteractiveSegMask)
-            )
+            );
           }
           state.interactiveSegState = castDraft({
             ...defaultValues.interactiveSegState,
-          })
-        })
+          });
+        });
       },
 
       handleFileManagerMaskSelect: async (blob: Blob) => {
-        const newMask = new Image()
+        const newMask = new Image();
 
-        await loadImage(newMask, URL.createObjectURL(blob))
+        await loadImage(newMask, URL.createObjectURL(blob));
         set((state) => {
-          state.editorState.extraMasks.push(castDraft(newMask))
-        })
-        get().runInpainting()
+          state.editorState.extraMasks.push(castDraft(newMask));
+        });
+        get().runInpainting();
       },
 
       setIsInpainting: (newValue: boolean) =>
         set((state) => {
-          state.isInpainting = newValue
+          state.isInpainting = newValue;
         }),
 
       setFile: async (file: File) => {
         if (get().settings.enableAutoExtractPrompt) {
           try {
-            const res = await getGenInfo(file)
+            const res = await getGenInfo(file);
             if (res.prompt) {
               set((state) => {
-                state.settings.prompt = res.prompt
-              })
+                state.settings.prompt = res.prompt;
+              });
             }
             if (res.negative_prompt) {
               set((state) => {
-                state.settings.negativePrompt = res.negative_prompt
-              })
+                state.settings.negativePrompt = res.negative_prompt;
+              });
             }
-          } catch (e: any) {
+          } catch (e: unknown) {
             toast({
               variant: "destructive",
-              description: e.message ? e.message : e.toString(),
-            })
+              title: "出错了！",
+              description: e instanceof Error ? e.message : String(e),
+            });
           }
         }
         set((state) => {
-          state.file = file
+          state.file = file;
           state.interactiveSegState = castDraft(
             defaultValues.interactiveSegState
-          )
-          state.editorState = castDraft(defaultValues.editorState)
-          state.cropperState = defaultValues.cropperState
-        })
+          );
+          state.editorState = castDraft(defaultValues.editorState);
+          state.cropperState = defaultValues.cropperState;
+        });
       },
 
       setCustomFile: (file: File) =>
         set((state) => {
-          state.customMask = file
+          state.customMask = file;
         }),
 
       setBaseBrushSize: (newValue: number) =>
         set((state) => {
-          state.editorState.baseBrushSize = newValue
+          state.editorState.baseBrushSize = newValue;
         }),
 
       decreaseBaseBrushSize: () => {
-        const baseBrushSize = get().editorState.baseBrushSize
-        let newBrushSize = baseBrushSize
+        const baseBrushSize = get().editorState.baseBrushSize;
+        let newBrushSize = baseBrushSize;
         if (baseBrushSize > 10) {
-          newBrushSize = baseBrushSize - 10
+          newBrushSize = baseBrushSize - 10;
         }
         if (baseBrushSize <= 10 && baseBrushSize > 0) {
-          newBrushSize = baseBrushSize - 3
+          newBrushSize = baseBrushSize - 3;
         }
-        get().setBaseBrushSize(newBrushSize)
+        get().setBaseBrushSize(newBrushSize);
       },
 
       increaseBaseBrushSize: () => {
-        const baseBrushSize = get().editorState.baseBrushSize
-        const newBrushSize = Math.min(baseBrushSize + 10, MAX_BRUSH_SIZE)
-        get().setBaseBrushSize(newBrushSize)
+        const baseBrushSize = get().editorState.baseBrushSize;
+        const newBrushSize = Math.min(baseBrushSize + 10, MAX_BRUSH_SIZE);
+        get().setBaseBrushSize(newBrushSize);
       },
 
       setImageSize: (width: number, height: number) => {
         // 根据图片尺寸调整 brushSize 的 scale
         set((state) => {
-          state.imageWidth = width
-          state.imageHeight = height
+          state.imageWidth = width;
+          state.imageHeight = height;
           state.editorState.brushSizeScale =
-            Math.max(Math.min(width, height), 512) / 512
-        })
-        get().resetExtender(width, height)
+            Math.max(Math.min(width, height), 512) / 512;
+        });
+        get().resetExtender(width, height);
       },
 
       setCropperX: (newValue: number) =>
         set((state) => {
-          state.cropperState.x = newValue
+          state.cropperState.x = newValue;
         }),
 
       setCropperY: (newValue: number) =>
         set((state) => {
-          state.cropperState.y = newValue
+          state.cropperState.y = newValue;
         }),
 
       setCropperWidth: (newValue: number) =>
         set((state) => {
-          state.cropperState.width = newValue
+          state.cropperState.width = newValue;
         }),
 
       setCropperHeight: (newValue: number) =>
         set((state) => {
-          state.cropperState.height = newValue
+          state.cropperState.height = newValue;
         }),
 
       setExtenderX: (newValue: number) =>
         set((state) => {
-          state.extenderState.x = newValue
+          state.extenderState.x = newValue;
         }),
 
       setExtenderY: (newValue: number) =>
         set((state) => {
-          state.extenderState.y = newValue
+          state.extenderState.y = newValue;
         }),
 
       setExtenderWidth: (newValue: number) =>
         set((state) => {
-          state.extenderState.width = newValue
+          state.extenderState.width = newValue;
         }),
 
       setExtenderHeight: (newValue: number) =>
         set((state) => {
-          state.extenderState.height = newValue
+          state.extenderState.height = newValue;
         }),
 
       setIsCropperExtenderResizing: (newValue: boolean) =>
         set((state) => {
-          state.isCropperExtenderResizing = newValue
+          state.isCropperExtenderResizing = newValue;
         }),
 
       updateExtenderDirection: (newValue: ExtenderDirection) => {
         console.log(
           `updateExtenderDirection: ${JSON.stringify(get().extenderState)}`
-        )
+        );
         set((state) => {
-          state.settings.extenderDirection = newValue
-          state.extenderState.x = 0
-          state.extenderState.y = 0
-          state.extenderState.width = state.imageWidth
-          state.extenderState.height = state.imageHeight
-        })
-        get().updateExtenderByBuiltIn(newValue, 1.5)
+          state.settings.extenderDirection = newValue;
+          state.extenderState.x = 0;
+          state.extenderState.y = 0;
+          state.extenderState.width = state.imageWidth;
+          state.extenderState.height = state.imageHeight;
+        });
+        get().updateExtenderByBuiltIn(newValue, 1.5);
       },
 
       updateExtenderByBuiltIn: (
         direction: ExtenderDirection,
         scale: number
       ) => {
-        const newExtenderState = { ...defaultValues.extenderState }
-        let { x, y, width, height } = newExtenderState
-        const { imageWidth, imageHeight } = get()
-        width = imageWidth
-        height = imageHeight
+        const newExtenderState = { ...defaultValues.extenderState };
+        let { x, y, width, height } = newExtenderState;
+        const { imageWidth, imageHeight } = get();
+        width = imageWidth;
+        height = imageHeight;
 
         switch (direction) {
           case ExtenderDirection.x:
-            x = -Math.ceil((imageWidth * (scale - 1)) / 2)
-            width = Math.ceil(imageWidth * scale)
-            break
+            x = -Math.ceil((imageWidth * (scale - 1)) / 2);
+            width = Math.ceil(imageWidth * scale);
+            break;
           case ExtenderDirection.y:
-            y = -Math.ceil((imageHeight * (scale - 1)) / 2)
-            height = Math.ceil(imageHeight * scale)
-            break
+            y = -Math.ceil((imageHeight * (scale - 1)) / 2);
+            height = Math.ceil(imageHeight * scale);
+            break;
           case ExtenderDirection.xy:
-            x = -Math.ceil((imageWidth * (scale - 1)) / 2)
-            y = -Math.ceil((imageHeight * (scale - 1)) / 2)
-            width = Math.ceil(imageWidth * scale)
-            height = Math.ceil(imageHeight * scale)
-            break
+            x = -Math.ceil((imageWidth * (scale - 1)) / 2);
+            y = -Math.ceil((imageHeight * (scale - 1)) / 2);
+            width = Math.ceil(imageWidth * scale);
+            height = Math.ceil(imageHeight * scale);
+            break;
           default:
-            break
+            break;
         }
 
         set((state) => {
-          state.extenderState.x = x
-          state.extenderState.y = y
-          state.extenderState.width = width
-          state.extenderState.height = height
-        })
+          state.extenderState.x = x;
+          state.extenderState.y = y;
+          state.extenderState.width = width;
+          state.extenderState.height = height;
+        });
       },
 
       resetExtender: (width: number, height: number) => {
         set((state) => {
-          state.extenderState.x = 0
-          state.extenderState.y = 0
-          state.extenderState.width = width
-          state.extenderState.height = height
-        })
+          state.extenderState.x = 0;
+          state.extenderState.y = 0;
+          state.extenderState.width = width;
+          state.extenderState.height = height;
+        });
       },
 
       setSeed: (newValue: number) =>
         set((state) => {
-          state.settings.seed = newValue
+          state.settings.seed = newValue;
         }),
 
       adjustMask: async (operate: AdjustMaskOperate) => {
-        const { imageWidth, imageHeight } = get()
-        const { curLineGroup, extraMasks } = get().editorState
-        const { adjustMaskKernelSize } = get().settings
+        const { imageWidth, imageHeight } = get();
+        const { curLineGroup, extraMasks } = get().editorState;
+        const { adjustMaskKernelSize } = get().settings;
         if (curLineGroup.length === 0 && extraMasks.length === 0) {
-          return
+          return;
         }
 
         set((state) => {
-          state.isAdjustingMask = true
-        })
+          state.isAdjustingMask = true;
+        });
 
         const maskCanvas = generateMask(
           imageWidth,
@@ -1117,30 +1129,30 @@ export const useStore = createWithEqualityFn<AppState & AppAction>()(
           [curLineGroup],
           extraMasks,
           BRUSH_COLOR
-        )
-        const maskBlob = dataURItoBlob(maskCanvas.toDataURL())
+        );
+        const maskBlob = dataURItoBlob(maskCanvas.toDataURL());
         const newMaskBlob = await postAdjustMask(
           maskBlob,
           operate,
           adjustMaskKernelSize
-        )
-        const newMask = await blobToImage(newMaskBlob)
+        );
+        const newMask = await blobToImage(newMaskBlob);
 
         // TODO: currently ignore stroke undo/redo
         set((state) => {
-          state.editorState.extraMasks = [castDraft(newMask)]
-          state.editorState.curLineGroup = []
-        })
+          state.editorState.extraMasks = [castDraft(newMask)];
+          state.editorState.curLineGroup = [];
+        });
 
         set((state) => {
-          state.isAdjustingMask = false
-        })
+          state.isAdjustingMask = false;
+        });
       },
       clearMask: () => {
         set((state) => {
-          state.editorState.extraMasks = []
-          state.editorState.curLineGroup = []
-        })
+          state.editorState.extraMasks = [];
+          state.editorState.curLineGroup = [];
+        });
       },
     })),
     {
@@ -1155,4 +1167,4 @@ export const useStore = createWithEqualityFn<AppState & AppAction>()(
     }
   ),
   shallow
-)
+);

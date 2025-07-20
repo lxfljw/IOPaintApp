@@ -8,15 +8,12 @@ files:
       - dist/**/*
       - main.js
       - web_app/dist/**/*
-      - main.py
-      - iopaint/**/*
-      - requirements.txt
 extraResources:
+  - from: build/python
+    to: Resources/python
   - to: Resources
     filter:
-      - main.py
       - iopaint/**/*
-      - requirements.txt
 mac:
   icon: build/icons/icon.png
   target:
