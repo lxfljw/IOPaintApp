@@ -1,7 +1,7 @@
-import * as React from "react"
-import * as SliderPrimitive from "@radix-ui/react-slider"
+import * as React from "react";
+import * as SliderPrimitive from "@radix-ui/react-slider";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 const Slider = React.forwardRef<
   React.ElementRef<typeof SliderPrimitive.Root>,
@@ -16,15 +16,22 @@ const Slider = React.forwardRef<
     tabIndex={-1}
     {...props}
   >
-    <SliderPrimitive.Track className="relative h-1.5 w-full grow overflow-hidden rounded-full bg-primary/20 data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50">
-      <SliderPrimitive.Range className="absolute h-full bg-primary data-[disabled]:cursor-not-allowed " />
+    <SliderPrimitive.Track
+      className="relative h-1.5 w-full grow overflow-hidden rounded-full data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50"
+      style={{ backgroundColor: "#22c55e20" }}
+    >
+      <SliderPrimitive.Range
+        className="absolute h-full data-[disabled]:cursor-not-allowed"
+        style={{ backgroundColor: "#22c55e" }}
+      />
     </SliderPrimitive.Track>
     <SliderPrimitive.Thumb
       tabIndex={-1}
-      className="block h-4 w-4 rounded-full border border-primary/60 bg-background shadow transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring data-[disabled]:cursor-not-allowed"
+      className="block h-4 w-4 rounded-full bg-background shadow transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring data-[disabled]:cursor-not-allowed"
+      style={{ borderColor: "#22c55e60" }}
     />
   </SliderPrimitive.Root>
-))
-Slider.displayName = SliderPrimitive.Root.displayName
+));
+Slider.displayName = SliderPrimitive.Root.displayName;
 
-export { Slider }
+export { Slider };

@@ -728,8 +728,12 @@ export default function Editor(props: EditorProps) {
   const renderBrush = (style: React.CSSProperties) => {
     return (
       <div
-        className="absolute rounded-[50%] border-[1px] border-[solid] border-[#ffcc00] pointer-events-none bg-[#ffcc00bb]"
-        style={style}
+        className="absolute rounded-[50%] border-[1px] border-[solid] pointer-events-none"
+        style={{
+          ...style,
+          borderColor: "#22c55e", // 使用统一的绿色
+          backgroundColor: "#22c55ebb", // 使用统一的半透明绿色
+        }}
       />
     );
   };

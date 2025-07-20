@@ -37,7 +37,20 @@ export default function FileSelect(props: FileSelectProps) {
     <div className="absolute flex w-screen h-screen justify-center items-center pointer-events-none">
       <label
         htmlFor={uploadElemId}
-        className="grid bg-background border-[2px] border-[dashed] rounded-lg min-w-[600px] hover:bg-primary hover:text-primary-foreground pointer-events-auto"
+        className="grid bg-background border-[2px] border-dashed border-gray-300 rounded-lg min-w-[600px] pointer-events-auto transition-all duration-200"
+        style={{
+          borderColor: "#d1d5db", // 默认边框色
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = "#86efac"; // 悬停背景色
+          e.currentTarget.style.borderColor = "#4ade80"; // 悬停边框色
+          e.currentTarget.style.color = "#166534"; // 悬停文字色
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = ""; // 恢复默认背景色
+          e.currentTarget.style.borderColor = "#d1d5db"; // 恢复默认边框色
+          e.currentTarget.style.color = ""; // 恢复默认文字色
+        }}
       >
         <div
           className="grid p-16 w-full h-full"
