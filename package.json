@@ -8,9 +8,9 @@
     "dev": "concurrently \"cd web_app && npm run dev\" \"python3 main.py start --model lama --port 8080\"",
     "build": "cd web_app && npm run build",
     "build:python": "python3 -m PyInstaller build_python.spec --distpath build/python --workpath build/temp --clean",
-    "build:all": "./build.sh",
     "package": "electron-builder build --mac",
-    "postinstall": "electron-builder install-app-deps"
+    "postinstall": "electron-builder install-app-deps",
+    "build:all": "pnpm build:python && pnpm build && pnpm package"
   },
   "keywords": [],
   "author": "",

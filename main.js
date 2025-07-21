@@ -87,6 +87,8 @@ function startPythonServer() {
       "iopaint_server"
     );
     log("Python executable path:", pythonExecutable);
+    log("Python executable exists:", fs.existsSync(pythonExecutable));
+    log("cwd:", resourcePath);
 
     if (!fs.existsSync(pythonExecutable)) {
       log("Python executable not found at:", pythonExecutable);
@@ -98,19 +100,29 @@ function startPythonServer() {
       return;
     }
 
-    pythonProcess = spawn(
-      pythonExecutable,
-      ["start", "--model", "lama", "--port", "8080"],
-      {
-        stdio: "pipe",
-        env: {
-          ...process.env,
-          PYTHONUNBUFFERED: "1",
-          PYTHONPATH: resourcePath,
-        },
-        cwd: resourcePath,
-      }
-    );
+    try {
+      pythonProcess = spawn(
+        pythonExecutable,
+        ["start", "--model", "lama", "--port", "8080"],
+        {
+          stdio: "pipe",
+          env: {
+            ...process.env,
+            PYTHONUNBUFFERED: "1",
+            PYTHONPATH: resourcePath,
+          },
+          cwd: resourcePath,
+        }
+      );
+    } catch (err) {
+      log("Exception when spawning Python server:", err);
+      dialog.showErrorBox(
+        "Python 启动异常",
+        `spawn 过程中抛出异常: ${err.message}`
+      );
+      app.quit();
+      return;
+    }
   }
 
   // 捕获 Python 进程的输出
@@ -183,17 +195,45 @@ function createWindow() {
   });
 }
 
+function waitForServerReady(port, timeout = 15000) {
+  const http = require("http");
+  return new Promise((resolve, reject) => {
+    const start = Date.now();
+    function check() {
+      http
+        .get(`http://127.0.0.1:${port}/api/v1/server-config`, (res) => {
+          if (res.statusCode === 200) {
+            resolve();
+          } else {
+            retry();
+          }
+        })
+        .on("error", retry);
+    }
+    function retry() {
+      if (Date.now() - start > timeout) {
+        reject(new Error("Python server not ready in time"));
+      } else {
+        setTimeout(check, 500);
+      }
+    }
+    check();
+  });
+}
+
 app.whenReady().then(async () => {
   log("App is ready, starting services...");
 
   try {
     await startPythonServer();
-    createWindow();
+    createWindow(); // 启动后端后立即创建窗口，不等待后端 ready
   } catch (err) {
     log("Failed to start application:", err);
     dialog.showErrorBox(
       "Startup Error",
-      `Failed to start application: ${err.message}`
+      `Failed to start application: ${
+        err && (err.stack || err.message || JSON.stringify(err))
+      }`
     );
     app.quit();
   }
