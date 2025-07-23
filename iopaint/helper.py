@@ -42,33 +42,30 @@ def get_cache_path_by_url(url):
     return cached_file
 
 
-def download_model(url, model_md5: str = None):
-    if os.path.exists(url):
-        cached_file = url
+def get_resource_model_path(filename):
+    if getattr(sys, 'frozen', False):
+        base_path = sys._MEIPASS if hasattr(sys, '_MEIPASS') else os.path.dirname(sys.executable)
+        for root, dirs, files in os.walk(base_path):
+            if filename in files and os.path.basename(root) == "models":
+                return os.path.join(root, filename)
     else:
-        cached_file = get_cache_path_by_url(url)
-    if not os.path.exists(cached_file):
-        sys.stderr.write('Downloading: "{}" to {}\n'.format(url, cached_file))
-        hash_prefix = None
-        download_url_to_file(url, cached_file, hash_prefix, progress=True)
-        if model_md5:
-            _md5 = md5sum(cached_file)
-            if model_md5 == _md5:
-                logger.info(f"Download model success, md5: {_md5}")
-            else:
-                try:
-                    os.remove(cached_file)
-                    logger.error(
-                        f"Model md5: {_md5}, expected md5: {model_md5}, wrong model deleted. Please restart iopaint."
-                        f"If you still have errors, please try download model manually first https://lama-cleaner-docs.vercel.app/install/download_model_manually.\n"
-                    )
-                except:
-                    logger.error(
-                        f"Model md5: {_md5}, expected md5: {model_md5}, please delete {cached_file} and restart iopaint."
-                    )
-                exit(-1)
+        # 开发环境也递归查找项目根目录下所有 models 目录
+        project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+        for root, dirs, files in os.walk(project_root):
+            if filename in files and os.path.basename(root) == "models":
+                return os.path.join(root, filename)
+    return None
 
-    return cached_file
+
+def download_model(url, model_md5: str = None):
+    filename = os.path.basename(url)
+    local_model = get_resource_model_path(filename)
+    if local_model:
+        print(f"使用本地模型文件: {local_model}")
+        logger.info(f"使用本地模型文件: {local_model}")
+        # 跳过 MD5 检查，直接返回本地模型路径
+        return local_model
+    raise RuntimeError(f"未找到本地模型文件 {filename}，且禁止联网下载！请确保模型已打包进 app。")
 
 
 def ceil_modulo(x, mod):
@@ -108,7 +105,18 @@ def load_jit_model(url_or_path, device, model_md5: str):
     try:
         model = torch.jit.load(model_path, map_location="cpu").to(device)
     except Exception as e:
-        handle_error(model_path, model_md5, e)
+        # 如果是本地模型（来自 get_resource_model_path），跳过 MD5 检查
+        local_model = get_resource_model_path(os.path.basename(model_path))
+        if local_model and local_model == model_path:
+            logger.warning(f"跳过本地模型 MD5 检查: {model_path}")
+            # 尝试直接加载，忽略 MD5 不匹配
+            try:
+                model = torch.jit.load(model_path, map_location="cpu").to(device)
+            except Exception as e2:
+                logger.error(f"加载本地模型失败: {e2}")
+                raise e2
+        else:
+            handle_error(model_path, model_md5, e)
     model.eval()
     return model
 

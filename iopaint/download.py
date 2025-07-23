@@ -1,6 +1,7 @@
 import glob
 import json
 import os
+import sys
 from functools import lru_cache
 from typing import List, Optional
 
@@ -304,11 +305,49 @@ def scan_converted_diffusers_models(cache_dir) -> List[ModelInfo]:
     return available_models
 
 
-def scan_models() -> List[ModelInfo]:
+def scan_models() -> list:
+    from iopaint.model import models
+    
+    # 兼容开发环境
     model_dir = os.getenv("XDG_CACHE_HOME", DEFAULT_MODEL_DIR)
     available_models = []
     available_models.extend(scan_inpaint_models(model_dir))
     available_models.extend(scan_single_file_diffusion_models(model_dir))
     available_models.extend(scan_diffusers_models())
     available_models.extend(scan_converted_diffusers_models(model_dir))
+    
+    # 递归查找 app 包内 models 目录，注册为对应的模型
+    bundled_models = []
+    if getattr(sys, 'frozen', False):
+        base_path = sys._MEIPASS if hasattr(sys, '_MEIPASS') else os.path.dirname(sys.executable)
+        for root, dirs, files in os.walk(base_path):
+            for file in files:
+                if file.endswith('.pt') and os.path.basename(root) == 'models':
+                    model_path = os.path.join(root, file)
+                    # 根据文件名映射到模型名称
+                    if file == 'big-lama.pt':
+                        bundled_models.append(ModelInfo(
+                            name='lama',
+                            path=model_path,
+                            model_type=ModelType.INPAINT,
+                        ))
+                    # 可以根据需要添加其他模型映射
+    # 兼容开发环境
+    else:
+        project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+        for root, dirs, files in os.walk(project_root):
+            for file in files:
+                if file.endswith('.pt') and os.path.basename(root) == 'models':
+                    model_path = os.path.join(root, file)
+                    # 根据文件名映射到模型名称
+                    if file == 'big-lama.pt':
+                        bundled_models.append(ModelInfo(
+                            name='lama',
+                            path=model_path,
+                            model_type=ModelType.INPAINT,
+                        ))
+                    # 可以根据需要添加其他模型映射
+    
+    # 将本地模型添加到可用模型列表，优先级最高（放在前面）
+    available_models = bundled_models + available_models
     return available_models

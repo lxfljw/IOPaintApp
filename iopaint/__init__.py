@@ -49,6 +49,15 @@ def fix_window_pytorch():
 def entry_point():
     # To make os.environ["XDG_CACHE_HOME"] = args.model_cache_dir works for diffusers
     # https://github.com/huggingface/diffusers/blob/be99201a567c1ccd841dc16fb24e88f7f239c187/src/diffusers/utils/constants.py#L18
+    import sys
+    
+    # 在 CLI 层面再次过滤 PyInstaller 参数（双重保险）
+    for arg in ["-B", "-S", "-O", "-OO"]:
+        while arg in sys.argv:
+            sys.argv.remove(arg)
+    
+    print(f"[DEBUG] entry_point sys.argv: {sys.argv}")
+    
     from iopaint.cli import typer_app
 
     fix_window_pytorch()

@@ -63,8 +63,24 @@ from iopaint.schema import (
     RealESRGANModel,
 )
 
+import sys
+
 CURRENT_DIR = Path(__file__).parent.absolute().resolve()
-WEB_APP_DIR = CURRENT_DIR / "web_app"
+
+# 打包后的 web_app 路径处理
+if getattr(sys, 'frozen', False):
+    # 打包环境：web_app 在基础路径下
+    base_path = sys._MEIPASS if hasattr(sys, '_MEIPASS') else os.path.dirname(sys.executable)
+    WEB_APP_DIR = Path(base_path) / "web_app"
+    print(f"[DEBUG] 打包环境 WEB_APP_DIR: {WEB_APP_DIR}")
+    print(f"[DEBUG] WEB_APP_DIR 存在: {WEB_APP_DIR.exists()}")
+    if WEB_APP_DIR.exists():
+        print(f"[DEBUG] WEB_APP_DIR 内容: {list(WEB_APP_DIR.iterdir())}")
+else:
+    # 开发环境：web_app 在上级目录
+    WEB_APP_DIR = CURRENT_DIR.parent / "web_app" / "dist"
+    print(f"[DEBUG] 开发环境 WEB_APP_DIR: {WEB_APP_DIR}")
+    print(f"[DEBUG] WEB_APP_DIR 存在: {WEB_APP_DIR.exists()}")
 
 
 def api_middleware(app: FastAPI):

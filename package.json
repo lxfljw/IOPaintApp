@@ -16,9 +16,9 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "concurrently": "^8.2.2",
     "electron": "^36.4.0",
-    "electron-builder": "^24.13.3",
-    "concurrently": "^8.2.2"
+    "electron-builder": "^24.13.3"
   },
   "build": {
     "appId": "com.watermagician.app",
@@ -29,12 +29,17 @@
     "files": [
       "dist/**/*",
       "main.js",
-      "web_app/dist/**/*"
+      "web_app/dist/**/*",
+      "models/**/*"
     ],
     "extraResources": [
       {
         "from": "build/python",
         "to": "Resources/python"
+      },
+      {
+        "from": "models",
+        "to": "Resources/models"
       },
       {
         "from": ".",
@@ -50,5 +55,8 @@
         "dmg"
       ]
     }
+  },
+  "dependencies": {
+    "flexsearch": "^0.8.205"
   }
 }

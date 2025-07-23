@@ -10,7 +10,6 @@ a = Analysis(
         ('iopaint', 'iopaint'),
         ('requirements.txt', '.'),
         ('models/big-lama.pt', 'models'),
-        ('web_app/dist', 'web_app'),
     ],
     hiddenimports=[
         'iopaint',
@@ -76,7 +75,7 @@ exe = EXE(
     runtime_tmpdir=None,
     console=True,
     disable_windowed_traceback=False,
-    argv_emulation=True,
+    argv_emulation=False,
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,

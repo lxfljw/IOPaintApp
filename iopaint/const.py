@@ -1,4 +1,5 @@
 import os
+import sys
 from typing import List
 
 INSTRUCT_PIX2PIX_NAME = "timbrooks/instruct-pix2pix"
@@ -94,9 +95,16 @@ LOCAL_FILES_ONLY_HELP = """
 When loading diffusion models, using local files only, not connect to HuggingFace server.
 """
 
-DEFAULT_MODEL_DIR = os.path.abspath(
-    os.getenv("XDG_CACHE_HOME", os.path.join(os.path.expanduser("~"), ".cache"))
-)
+# 打包后优先使用 app 内部的 models 目录
+if getattr(sys, 'frozen', False):
+    # 打包环境：使用 app 内部 models 目录
+    base_path = sys._MEIPASS if hasattr(sys, '_MEIPASS') else os.path.dirname(sys.executable)
+    DEFAULT_MODEL_DIR = os.path.join(base_path, "models")
+else:
+    # 开发环境：使用缓存目录
+    DEFAULT_MODEL_DIR = os.path.abspath(
+        os.getenv("XDG_CACHE_HOME", os.path.join(os.path.expanduser("~"), ".cache"))
+    )
 
 MODEL_DIR_HELP = f"""
 Model download directory (by setting XDG_CACHE_HOME environment variable), by default model download to {DEFAULT_MODEL_DIR}
